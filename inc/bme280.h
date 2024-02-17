@@ -70,6 +70,7 @@ typedef enum
 	BMP_ERRPERIPH = 2,
 	BMP_ERRFULL = 3,
 	BMP_ERRSTART = 4,
+	BMP_ERRTIMEOUT= 5,
 }BMP_ERR;
 
 //TYPES
@@ -92,7 +93,7 @@ typedef struct
 	int16_t dig_h2;
 	uint8_t dig_h3;
 	int16_t dig_h4;
-	int16_t dig_h5
+	int16_t dig_h5;
 	int8_t dig_h6;
 
 	int32_t t_fine;		/*! Variable to store the intermediate temperature coefficient */

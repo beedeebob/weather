@@ -90,8 +90,6 @@ void BMP_init(BMP_TypeDef *pBMP, BMP_InitTypeDef *pInitStruct)
 {
 	//Initialize device
 	memset(pBMP, 0, sizeof(BMP_TypeDef));
-	pBMP->flags |= BMP_FLAG_CMPLT;
-	pBMP->state = BMP_STATE_START;
 	pBMP->transmitReceive = pInitStruct->transmitReceive;
 
 	pBMP->settings.ctrl_hum &= ~(BMP_REG_CTRLHUM_OSRSH_MASK);
@@ -116,16 +114,15 @@ void BMP_init(BMP_TypeDef *pBMP, BMP_InitTypeDef *pInitStruct)
   */
 void BMP_StructInit(BMP_InitTypeDef *pInitStruct)
 {
-	BMP_InitTypeDef initStruct = {0};
+	memset(pInitStruct, 0, sizeof(BMP_InitTypeDef));
+	pInitStruct->mode = BMP_REG_CTRLMEAS_MODE_NORMAL;
+	pInitStruct->temperatureOversampling = BMP_REG_CTRLMEAS_OSRST_OVRSMPX1;
+	pInitStruct->pressureOversampling = BMP_REG_CTRLMEAS_OSRSP_OVRSMPX1;
+	pInitStruct->humidityOversampling = BMP_REG_CTRLHUM_OSRS_OVRSMPX1;
+	pInitStruct->iirFilter = BMP_REG_CONFIG_FILTER_OFF;
+	pInitStruct->spi3Wire = 0;
 
-	initStruct.mode = BMP_REG_CTRLMEAS_MODE_NORMAL;
-	initStruct.temperatureOversampling = BMP_REG_CTRLMEAS_OSRST_OVRSMPX1;
-	initStruct.pressureOversampling = BMP_REG_CTRLMEAS_OSRSP_OVRSMPX1;
-	initStruct.humidityOversampling = BMP_REG_CTRLHUM_OSRS_OVRSMPX1;
-	initStruct.iirFilter = BMP_REG_CONFIG_FILTER_OFF;
-	initStruct.spi3Wire = 0;
-
-	initStruct.transmitReceive = NULL;
+	pInitStruct->transmitReceive = NULL;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -222,6 +219,7 @@ BMP_ERR BMP_Start(BMP_TypeDef *pBMP, uint32_t osTimeout)
 	}
 
 	pBMP->flags |= BMP_FLAG_STARTED;
+	return BMP_ERROK;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -252,8 +250,8 @@ BMP_ERR BMP_ReadSensors(BMP_TypeDef *pBMP, int32_t *temperature, uint32_t *press
 	int32_t rawHumidity = (data[7] << 8) + data[8];
 
 	pBMP->temperature = compensate_temperature(pBMP, rawTemperature);
-	pBMP->pressure = compensate_pressure(pBMP);
-	pBMP->humidity = compensate_humidity(pBMP);
+	pBMP->pressure = compensate_pressure(pBMP, rawPressure);
+	pBMP->humidity = compensate_humidity(pBMP, rawHumidity);
 
     *temperature = pBMP->temperature;
     *pressure = pBMP->pressure;

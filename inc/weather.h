@@ -9,13 +9,15 @@
 #define WEATHER_H_
 
 /* Includes ------------------------------------------------------------------*/
+#include "cmsis_os2.h"
+
 /* Exported defines ----------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
 extern const osThreadAttr_t weatherTask_attributes;
 
 /* Exported functions ------------------------------------------------------- */
-void WTHR_Task(const void* arg);
-
+void WTHR_Task(void* arg);
+void WTHR_spiTxRxCompleteCallback(void);
 
 #endif /* WEATHER_H_ */
