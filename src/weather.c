@@ -42,6 +42,9 @@ static BMP_ERR WTHR_TransmitReceive(struct BMP_TypeDef *arg, uint8_t *pTxData, u
   * @param	None
   * @retval	None
   */
+volatile int32_t temperature;
+volatile uint32_t pressure;
+volatile uint32_t humidity;
 void WTHR_Task(void* arg)
 {
 	//Create event
@@ -60,6 +63,8 @@ void WTHR_Task(void* arg)
 	while(1)
 	{
 		//TODO: Get BME280 readings
+		BMP_ReadSensors(&bme280, &temperature, &pressure, &humidity, osWaitForever);
+		HAL_GPIO_TogglePin(GPIO_LED_GPIO_Port, GPIO_LED_Pin);
 		osDelay(1000);
 	}
 }

@@ -57,6 +57,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define GPIO_LED_Pin GPIO_PIN_13
+#define GPIO_LED_GPIO_Port GPIOC
 #define GPIO_BME280_CS_Pin GPIO_PIN_4
 #define GPIO_BME280_CS_GPIO_Port GPIOA
 #define SPI1_SCK_BME280_Pin GPIO_PIN_5

@@ -12,6 +12,7 @@
 #include "stdint.h"
 #include "main.h"
 #include "string.h"
+#include "cmsis_os2.h"
 
 /* Private define ------------------------------------------------------------*/
 //MACROS
@@ -95,7 +96,7 @@ void BMP_init(BMP_TypeDef *pBMP, BMP_InitTypeDef *pInitStruct)
 	pBMP->settings.ctrl_hum &= ~(BMP_REG_CTRLHUM_OSRSH_MASK);
 	pBMP->settings.ctrl_hum |= (BMP_REG_CTRLHUM_OSRSH_MASK & (pInitStruct->humidityOversampling << BMP_REG_CTRLHUM_OSRSH_POS));
 
-	pBMP->settings.ctrl_meas &= ~(BMP_REG_CTRLMEAS_MODE_MASK | BMP_REG_CTRLMEAS_OSRST_MASK | BMP_REG_CTRLMEAS_OSRSP_MASK);
+	pBMP->settings.ctrl_meas &= (uint8_t)(~(BMP_REG_CTRLMEAS_MODE_MASK | BMP_REG_CTRLMEAS_OSRST_MASK | BMP_REG_CTRLMEAS_OSRSP_MASK));
 	pBMP->settings.ctrl_meas |= (BMP_REG_CTRLMEAS_MODE_MASK & (pInitStruct->mode << BMP_REG_CTRLMEAS_MODE_POS));
 	pBMP->settings.ctrl_meas |= (BMP_REG_CTRLMEAS_OSRST_MASK & (pInitStruct->temperatureOversampling << BMP_REG_CTRLMEAS_OSRST_POS));
 	pBMP->settings.ctrl_meas |= (BMP_REG_CTRLMEAS_OSRSP_MASK & (pInitStruct->pressureOversampling << BMP_REG_CTRLMEAS_OSRSP_POS));
@@ -151,6 +152,7 @@ BMP_ERR BMP_Start(BMP_TypeDef *pBMP, uint32_t osTimeout)
 	result = pBMP->transmitReceive(pBMP, data, data, 2, osTimeout);
 	if(result != BMP_ERROK)
 		return result;
+	osDelay(2);
 
 	//Calibration 0 - 25
 	data[0] = (BMP_REG_CALIB00 | 0x80);
@@ -180,9 +182,9 @@ BMP_ERR BMP_Start(BMP_TypeDef *pBMP, uint32_t osTimeout)
 
     pBMP->calibration.dig_h2 = (int16_t)TOU16(data, 1);
     pBMP->calibration.dig_h3 = (uint8_t)data[3];
-    pBMP->calibration.dig_h4 = (int16_t)TOU16(data, 4);
-    pBMP->calibration.dig_h5 = (int16_t)TOU16(data, 6);
-    pBMP->calibration.dig_h6 = (int16_t)TOU16(data, 8);
+    pBMP->calibration.dig_h4 = (int16_t)((data[4] << 4) | (data[5] & 0x0f));
+    pBMP->calibration.dig_h5 = (int16_t)((data[6] << 4) | (data[5] >> 4));
+    pBMP->calibration.dig_h6 = (int16_t)TOU16(data, 7);
 
     //Get Settings
 	data[0] = (BMP_REG_CTRLHUM | 0x80);

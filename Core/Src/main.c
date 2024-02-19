@@ -267,7 +267,7 @@ static void MX_IWDG_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN IWDG_Init 2 */
-
+  __HAL_DBGMCU_FREEZE_IWDG();
   /* USER CODE END IWDG_Init 2 */
 
 }
@@ -383,12 +383,23 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIO_LED_GPIO_Port, GPIO_LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIO_BME280_CS_GPIO_Port, GPIO_BME280_CS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : GPIO_LED_Pin */
+  GPIO_InitStruct.Pin = GPIO_LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIO_LED_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GPIO_BME280_CS_Pin */
   GPIO_InitStruct.Pin = GPIO_BME280_CS_Pin;
@@ -429,6 +440,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	  HAL_IWDG_Refresh(&hiwdg);
     osDelay(1);
   }
   /* USER CODE END 5 */
