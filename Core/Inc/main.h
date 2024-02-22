@@ -59,6 +59,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define GPIO_LED_Pin GPIO_PIN_13
 #define GPIO_LED_GPIO_Port GPIOC
+#define USART2_TX_PC_Pin GPIO_PIN_2
+#define USART2_TX_PC_GPIO_Port GPIOA
+#define USART2_RX_PC_Pin GPIO_PIN_3
+#define USART2_RX_PC_GPIO_Port GPIOA
 #define GPIO_BME280_CS_Pin GPIO_PIN_4
 #define GPIO_BME280_CS_GPIO_Port GPIOA
 #define SPI1_SCK_BME280_Pin GPIO_PIN_5
@@ -75,10 +79,6 @@ void Error_Handler(void);
 #define SWD_SWDIO_GPIO_Port GPIOA
 #define SWD_SWCLK_Pin GPIO_PIN_14
 #define SWD_SWCLK_GPIO_Port GPIOA
-#define I2C1_SCL_DISP_Pin GPIO_PIN_6
-#define I2C1_SCL_DISP_GPIO_Port GPIOB
-#define I2C1_SDA_DISP_Pin GPIO_PIN_7
-#define I2C1_SDA_DISP_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
