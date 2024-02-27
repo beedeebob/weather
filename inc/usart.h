@@ -30,7 +30,6 @@ typedef struct
 extern const osThreadAttr_t usart_attributes;
 
 extern USART_td usart1;
-extern USART_td usart2;
 
 /* Exported functions ------------------------------------------------------- */
 void USART_Init(void);

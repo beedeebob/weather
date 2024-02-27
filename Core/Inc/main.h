@@ -61,10 +61,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define TIM1_LED_Pin GPIO_PIN_13
 #define TIM1_LED_GPIO_Port GPIOC
-#define USART2_TX_PC_Pin GPIO_PIN_2
-#define USART2_TX_PC_GPIO_Port GPIOA
-#define USART2_RX_PC_Pin GPIO_PIN_3
-#define USART2_RX_PC_GPIO_Port GPIOA
 #define GPIO_CS_BME280_Pin GPIO_PIN_4
 #define GPIO_CS_BME280_GPIO_Port GPIOA
 #define SPI1_SCK_BME280_Pin GPIO_PIN_5
@@ -77,6 +73,8 @@ void Error_Handler(void);
 #define USART1_TX_ESP8266_GPIO_Port GPIOA
 #define USART1_RX_ESP8266_Pin GPIO_PIN_10
 #define USART1_RX_ESP8266_GPIO_Port GPIOA
+#define GPIO_USB_DPPU_Pin GPIO_PIN_15
+#define GPIO_USB_DPPU_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

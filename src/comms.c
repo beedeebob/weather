@@ -11,6 +11,7 @@
 #include "comms.h"
 #include "benQueue.h"
 #include "usart.h"
+#include "usb_device.h"
 
 /* Private define ------------------------------------------------------------*/
 #define COMMS_BUFFERSIZE				128
@@ -25,8 +26,8 @@ enum
 /* Private variables ---------------------------------------------------------*/
 static uint8_t toUsart1Buffer[COMMS_BUFFERSIZE];
 static QUEUE_Typedef toUSART1 = {toUsart1Buffer, COMMS_BUFFERSIZE, 0, 0};
-static uint8_t toUsart2Buffer[COMMS_BUFFERSIZE];
-static QUEUE_Typedef toUSART2 = {toUsart2Buffer, COMMS_BUFFERSIZE, 0, 0};
+static uint8_t toUSBBuffer[COMMS_BUFFERSIZE];
+static QUEUE_Typedef toUSB = {toUSBBuffer, COMMS_BUFFERSIZE, 0, 0};
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -43,10 +44,23 @@ void COMMS_milli(void)
 		USART_Transmit(&usart1, &toUSART1);
 	}
 
-	if(QUEUE_COUNT(&toUSART2) > 0)
+	if(QUEUE_COUNT(&toUSB) > 0)
 	{
-		USART_Transmit(&usart2, &toUSART2);
+		USB_Transmit(&toUSB);
 	}
+}
+
+/* ---------------------------------------------------------------------------*/
+/**
+  * @brief	USB received callback handler
+  * @param	None
+  * @retval	None
+  */
+HAL_StatusTypeDef USB_ReceiveCallback(uint8_t *pData, uint32_t length)
+{
+	if(QUEUE_AddArray(&toUSART1, pData, length) != QUEUE_OK)
+		return HAL_ERROR;
+	return HAL_OK;
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -57,16 +71,8 @@ void COMMS_milli(void)
   */
 HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t length)
 {
-	if(usart->huart->Instance == USART1)
-	{
-		if(QUEUE_AddArray(&toUSART2, pData, length) != QUEUE_OK)
-			return HAL_ERROR;
-	}
-	if(usart->huart->Instance == USART2)
-	{
-		if(QUEUE_AddArray(&toUSART1, pData, length) != QUEUE_OK)
-			return HAL_ERROR;
-	}
+	if(QUEUE_AddArray(&toUSB, pData, length) != QUEUE_OK)
+		return HAL_ERROR;
 	return HAL_OK;
 }
 
