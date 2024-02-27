@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_hal.h"
+#include "stm32f3xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -57,28 +59,24 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define GPIO_LED_Pin GPIO_PIN_13
-#define GPIO_LED_GPIO_Port GPIOC
+#define TIM1_LED_Pin GPIO_PIN_13
+#define TIM1_LED_GPIO_Port GPIOC
 #define USART2_TX_PC_Pin GPIO_PIN_2
 #define USART2_TX_PC_GPIO_Port GPIOA
 #define USART2_RX_PC_Pin GPIO_PIN_3
 #define USART2_RX_PC_GPIO_Port GPIOA
-#define GPIO_BME280_CS_Pin GPIO_PIN_4
-#define GPIO_BME280_CS_GPIO_Port GPIOA
+#define GPIO_CS_BME280_Pin GPIO_PIN_4
+#define GPIO_CS_BME280_GPIO_Port GPIOA
 #define SPI1_SCK_BME280_Pin GPIO_PIN_5
 #define SPI1_SCK_BME280_GPIO_Port GPIOA
 #define SPI1_MISO_BME280_Pin GPIO_PIN_6
 #define SPI1_MISO_BME280_GPIO_Port GPIOA
 #define SPI1_MOSI_BME280_Pin GPIO_PIN_7
 #define SPI1_MOSI_BME280_GPIO_Port GPIOA
-#define USART1_TX_ESP_Pin GPIO_PIN_9
-#define USART1_TX_ESP_GPIO_Port GPIOA
-#define USART1_RX_ESP_Pin GPIO_PIN_10
-#define USART1_RX_ESP_GPIO_Port GPIOA
-#define SWD_SWDIO_Pin GPIO_PIN_13
-#define SWD_SWDIO_GPIO_Port GPIOA
-#define SWD_SWCLK_Pin GPIO_PIN_14
-#define SWD_SWCLK_GPIO_Port GPIOA
+#define USART1_TX_ESP8266_Pin GPIO_PIN_9
+#define USART1_TX_ESP8266_GPIO_Port GPIOA
+#define USART1_RX_ESP8266_Pin GPIO_PIN_10
+#define USART1_RX_ESP8266_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

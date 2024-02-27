@@ -23,18 +23,6 @@ enum
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-const osThreadAttr_t comms_attributes =
-{
-  .name = "commsTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-static const osEventFlagsAttr_t commsEventAtt =
-{
-	.name = "commsEvents"
-};
-static osEventFlagsId_t commsEvents;
-
 static uint8_t toUsart1Buffer[COMMS_BUFFERSIZE];
 static QUEUE_Typedef toUSART1 = {toUsart1Buffer, COMMS_BUFFERSIZE, 0, 0};
 static uint8_t toUsart2Buffer[COMMS_BUFFERSIZE];
@@ -44,30 +32,20 @@ static QUEUE_Typedef toUSART2 = {toUsart2Buffer, COMMS_BUFFERSIZE, 0, 0};
 /* Private functions ---------------------------------------------------------*/
 
 /**
-  * @brief	Task routine
+  * @brief	Task milli routine
   * @param	None
   * @retval	None
   */
-void COMMS_Task(void* arg)
+void COMMS_milli(void)
 {
-	commsEvents = osEventFlagsNew(&commsEventAtt);
-
-	while(1)
+	if(QUEUE_COUNT(&toUSART1) > 0)
 	{
-		if(QUEUE_COUNT(&toUSART1) > 0)
-		{
-			osEventFlagsSet(commsEvents, COMMS_FLAG_TASKRUN);
-			USART_Transmit(&usart1, &toUSART1);
-		}
+		USART_Transmit(&usart1, &toUSART1);
+	}
 
-		if(QUEUE_COUNT(&toUSART2) > 0)
-		{
-			osEventFlagsSet(commsEvents, COMMS_FLAG_TASKRUN);
-			USART_Transmit(&usart2, &toUSART2);
-		}
-
-		osDelay(1);
-		osEventFlagsWait(commsEvents, COMMS_FLAG_TASKRUN, 0, osWaitForever);
+	if(QUEUE_COUNT(&toUSART2) > 0)
+	{
+		USART_Transmit(&usart2, &toUSART2);
 	}
 }
 
@@ -89,8 +67,6 @@ HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t
 		if(QUEUE_AddArray(&toUSART1, pData, length) != QUEUE_OK)
 			return HAL_ERROR;
 	}
-
-	osEventFlagsSet(commsEvents, COMMS_FLAG_TASKRUN);
 	return HAL_OK;
 }
 

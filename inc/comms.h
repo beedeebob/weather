@@ -17,6 +17,6 @@
 extern const osThreadAttr_t comms_attributes;
 
 /* Exported functions ------------------------------------------------------- */
-void COMMS_Task(void* arg);
+void COMMS_milli(void);
 
 #endif /* COMMS_H_ */

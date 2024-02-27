@@ -14,6 +14,8 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim1;
+
 
 const osThreadAttr_t weatherTask_attributes =
 {
@@ -60,11 +62,17 @@ void WTHR_Task(void* arg)
 	//Start BME280
 	BMP_Start(&bme280, osWaitForever);
 
+	//Start LED
+	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+
 	while(1)
 	{
 		//TODO: Get BME280 readings
 		BMP_ReadSensors(&bme280, &temperature, &pressure, &humidity, osWaitForever);
-		HAL_GPIO_TogglePin(GPIO_LED_GPIO_Port, GPIO_LED_Pin);
+		if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) == 0)
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 20);
+		else
+			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
 		osDelay(1000);
 	}
 }
@@ -77,23 +85,23 @@ void WTHR_Task(void* arg)
   */
 static BMP_ERR WTHR_TransmitReceive(struct BMP_TypeDef *arg, uint8_t *pTxData, uint8_t *pRxData, uint8_t length, uint32_t osTimeout)
 {
-	HAL_GPIO_WritePin(GPIO_BME280_CS_GPIO_Port, GPIO_BME280_CS_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIO_CS_BME280_GPIO_Port, GPIO_CS_BME280_Pin, GPIO_PIN_RESET);
 
 	osEventFlagsClear(weatherEventsHandle, weatherEventFlag_SPICOMPLETE);
 	if(HAL_SPI_TransmitReceive_DMA(&hspi1, pTxData, pRxData, length) != HAL_OK)
 	{
-		HAL_GPIO_WritePin(GPIO_BME280_CS_GPIO_Port, GPIO_BME280_CS_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIO_CS_BME280_GPIO_Port, GPIO_CS_BME280_Pin, GPIO_PIN_SET);
 		return BMP_ERRPERIPH;
 	}
 
 	uint32_t flags = osEventFlagsWait(weatherEventsHandle, weatherEventFlag_SPICOMPLETE, osFlagsWaitAll, osTimeout);
 	if(!(flags & weatherEventFlag_SPICOMPLETE))
 	{
-		HAL_GPIO_WritePin(GPIO_BME280_CS_GPIO_Port, GPIO_BME280_CS_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIO_CS_BME280_GPIO_Port, GPIO_CS_BME280_Pin, GPIO_PIN_SET);
 		return BMP_ERRTIMEOUT;
 	}
 
-	HAL_GPIO_WritePin(GPIO_BME280_CS_GPIO_Port, GPIO_BME280_CS_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIO_CS_BME280_GPIO_Port, GPIO_CS_BME280_Pin, GPIO_PIN_SET);
 	return BMP_ERROK;
 }
 

@@ -10,7 +10,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "cmsis_os2.h"
-#include "stm32f1xx_hal.h"
+#include "stm32f3xx_hal.h"
 #include "benQueue.h"
 
 /* Exported defines ----------------------------------------------------------*/
@@ -23,6 +23,7 @@ typedef struct
 	UART_HandleTypeDef *huart;
 	uint8_t txBuffer[USART_TXBUFFERSIZE];
 	uint8_t rxBuffer[USART_RXBUFFERSIZE];
+	uint32_t lastDMAIndex;
 }USART_td;
 
 /* Exported variables --------------------------------------------------------*/
@@ -32,7 +33,8 @@ extern USART_td usart1;
 extern USART_td usart2;
 
 /* Exported functions ------------------------------------------------------- */
-void USART_Task(void* arg);
+void USART_Init(void);
+void USART_milli(void);
 HAL_StatusTypeDef USART_Transmit(USART_td *usart, QUEUE_Typedef *pQueue);
 
 #endif /* USART_H_ */

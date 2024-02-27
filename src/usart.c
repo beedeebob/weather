@@ -22,19 +22,11 @@ enum
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 
-const osThreadAttr_t usart_attributes =
-{
-  .name = "usartTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-osThreadId_t usartTaskHandle1;
-osThreadId_t usartTaskHandle2;
-
 USART_td usart1 = {&huart1};
 USART_td usart2 = {&huart2};
 
 /* Private function prototypes -----------------------------------------------*/
+static void USART_usartTick(USART_td *usart);
 HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t length);
 
 /* Private functions ---------------------------------------------------------*/
@@ -46,36 +38,39 @@ HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t
   */
 void USART_Init(void)
 {
-	usartTaskHandle1 = osThreadNew(USART_Task, &usart1, &usart_attributes);
-	usartTaskHandle2 = osThreadNew(USART_Task, &usart2, &usart_attributes);
+	HAL_UART_Receive_DMA(usart1.huart, usart1.rxBuffer, USART_RXBUFFERSIZE);
+	HAL_UART_Receive_DMA(usart2.huart, usart2.rxBuffer, USART_RXBUFFERSIZE);
 }
 
 /* ---------------------------------------------------------------------------*/
 /**
-  * @brief	Task routine
+  * @brief	Tick routine
   * @param	None
   * @retval	None
   */
-void USART_Task(void* arg)
+void USART_milli(void)
 {
-	USART_td * usart = (USART_td*)arg;
-	HAL_UART_Receive_DMA(usart->huart, usart->rxBuffer, USART_RXBUFFERSIZE);
+	USART_usartTick(&usart1);
+	USART_usartTick(&usart2);
+}
 
-	while(1)
+/* ---------------------------------------------------------------------------*/
+/**
+  * @brief	Tick routine
+  * @param	None
+  * @retval	None
+  */
+static void USART_usartTick(USART_td *usart)
+{
+	uint32_t currentDMAIndex = USART_RXBUFFERSIZE - __HAL_DMA_GET_COUNTER(usart->huart->hdmarx);
+	uint32_t length = (currentDMAIndex - usart->lastDMAIndex) & (USART_RXBUFFERSIZE - 1);
+	if(length > 0)
 	{
-		uint32_t lastDMAIndex = 0 ;
-		uint32_t currentDMAIndex = USART_RXBUFFERSIZE - __HAL_DMA_GET_COUNTER(usart->huart->hdmarx);
-		uint32_t length = (currentDMAIndex - lastDMAIndex) & (USART_RXBUFFERSIZE - 1);
-		if(length > 0)
-		{
-			if((lastDMAIndex + length) > USART_RXBUFFERSIZE)
-				length = (USART_RXBUFFERSIZE - lastDMAIndex);
+		if((usart->lastDMAIndex + length) > USART_RXBUFFERSIZE)
+			length = (USART_RXBUFFERSIZE - usart->lastDMAIndex);
 
-			if(USART_ReceiveCallback(usart, &usart->rxBuffer[lastDMAIndex], length) == HAL_OK)
-				lastDMAIndex = ((lastDMAIndex + length) & (USART_RXBUFFERSIZE - 1));
-		}
-
-		osDelay(1);
+		if(USART_ReceiveCallback(usart, &usart->rxBuffer[usart->lastDMAIndex], length) == HAL_OK)
+			usart->lastDMAIndex = ((usart->lastDMAIndex + length) & (USART_RXBUFFERSIZE - 1));
 	}
 }
 
