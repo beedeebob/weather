@@ -96,7 +96,7 @@ HAL_StatusTypeDef USART_Transmit(USART_td *usart, QUEUE_Typedef *pQueue)
 	if(length > USART_TXBUFFERSIZE)
 		length = USART_TXBUFFERSIZE;
 
-	QUEUE_ReadArray(pQueue, usart->txBuffer, length);
+	QUEUE_ReadToArray(pQueue, 0, usart->txBuffer, length);
 
 	HAL_StatusTypeDef result = HAL_UART_Transmit_DMA(usart->huart, usart->txBuffer, length);
 	if(result == HAL_OK)

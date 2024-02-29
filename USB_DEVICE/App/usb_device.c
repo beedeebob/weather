@@ -83,7 +83,7 @@ HAL_StatusTypeDef USB_Transmit(QUEUE_Typedef *pQueue)
 	if(length > 64)
 		length = 64;
 
-	QUEUE_ReadArray(pQueue, UserTxBufferFS, length);
+	QUEUE_ReadToArray(pQueue, 0, UserTxBufferFS, length);
 
 	USBD_StatusTypeDef result = CDC_Transmit_FS(UserTxBufferFS, length);
 	if(result == USBD_OK)

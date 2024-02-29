@@ -15,8 +15,12 @@
 #include "stdint.h"
 
 /* Exported defines ----------------------------------------------------------*/
-#define QUEUE_COUNT(Q)			(((Q)->in - (Q)->out) & ((Q)->size  - 1))
-#define QUEUE_SPACE(Q)			((Q)->size - 1 - QUEUE_COUNT(Q))
+#define QUEUE_COUNT(Q)					(((Q)->in - (Q)->out) & ((Q)->size  - 1))
+#define QUEUE_SPACE(Q)					((Q)->size - 1 - QUEUE_COUNT(Q))
+#define QUEUE_PTRLOOP(Q, PTR)			((PTR) & (Q->size - 1))
+#define QUEUE_TOU32(Q, OFFSET)			((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET)] + ((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET + 1)] << 8) + ((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET + 2)] << 16)  + ((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET + 3)] << 24) )
+#define QUEUE_TOU24(Q, OFFSET)			((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET)] + ((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET + 1)] << 8) + ((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET + 2)] << 16))
+#define QUEUE_TOU16(Q, OFFSET)			((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET)] + ((Q)->pBuff[QUEUE_PTRLOOP((Q), OFFSET + 1)] << 8))
 
 /* Exported types ------------------------------------------------------------*/
 typedef struct
@@ -45,7 +49,7 @@ uint8_t QUEUE_ElementAt(QUEUE_Typedef *queue, uint32_t index);
 uint8_t QUEUE_ReadOutByte(QUEUE_Typedef *queue);
 QUEUE_STATUS QUEUE_ReadOutArray(QUEUE_Typedef *queue, uint8_t *data, uint32_t length);
 QUEUE_STATUS QUEUE_ReadOutQueue(QUEUE_Typedef *queue, QUEUE_Typedef *data, uint32_t length);
-QUEUE_STATUS QUEUE_ReadArray(QUEUE_Typedef *queue, uint8_t *data, uint32_t length);
+QUEUE_STATUS QUEUE_ReadToArray(QUEUE_Typedef *queue, uint32_t offset, uint8_t *data, uint32_t length);
 QUEUE_STATUS QUEUE_Remove(QUEUE_Typedef *queue, uint32_t count);
 
 #endif /* BUFFER_H_ */

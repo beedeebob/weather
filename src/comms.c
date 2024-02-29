@@ -12,6 +12,7 @@
 #include "benQueue.h"
 #include "usart.h"
 #include "usb_device.h"
+#include "benPacket.h"
 
 /* Private define ------------------------------------------------------------*/
 #define COMMS_BUFFERSIZE				128
@@ -28,8 +29,12 @@ static uint8_t toUsart1Buffer[COMMS_BUFFERSIZE];
 static QUEUE_Typedef toUSART1 = {toUsart1Buffer, COMMS_BUFFERSIZE, 0, 0};
 static uint8_t toUSBBuffer[COMMS_BUFFERSIZE];
 static QUEUE_Typedef toUSB = {toUSBBuffer, COMMS_BUFFERSIZE, 0, 0};
+static uint8_t bpktBuffer[COMMS_BUFFERSIZE];
+static QUEUE_Typedef bpktQueue = {bpktBuffer, COMMS_BUFFERSIZE, 0, 0};
 
 /* Private function prototypes -----------------------------------------------*/
+static void COMMS_ESPPacketReceived(BPKT_Packet_TD *packet);
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -39,15 +44,47 @@ static QUEUE_Typedef toUSB = {toUSBBuffer, COMMS_BUFFERSIZE, 0, 0};
   */
 void COMMS_milli(void)
 {
+	//Parse received data for packets
+	BPKT_Packet_TD receivedPacket = {0};
+	while(QUEUE_COUNT(&bpktQueue) > 0)
+	{
+		BPKT_STATUS_ENUM result = PKT_Decode(&bpktQueue, &receivedPacket);
+		if(result == BPKT_OK)
+		{
+			COMMS_ESPPacketReceived(&receivedPacket);
+			QUEUE_Remove(&bpktQueue, BPKT_PACKETSIZE(receivedPacket.length));
+		}
+		else if(result == BPKT_NOTENOUGHDATA)
+			break;
+		else
+			QUEUE_Remove(&bpktQueue, 1);
+	}
+
+	//Transfer out to USART
 	if(QUEUE_COUNT(&toUSART1) > 0)
 	{
 		USART_Transmit(&usart1, &toUSART1);
 	}
 
+	//Transfer out to USB
 	if(QUEUE_COUNT(&toUSB) > 0)
 	{
 		USB_Transmit(&toUSB);
 	}
+
+
+#ifndef DEBUG
+#error BEN: Remove test encoding/decoding
+#else
+	static uint16_t tmr = 5000;
+	if(tmr)
+		tmr--;
+	if(!tmr)
+	{
+		tmr = 5000;
+		PKT_Encode((uint8_t*)"TESTING", 8, &bpktQueue);
+	}
+#endif
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -71,8 +108,20 @@ HAL_StatusTypeDef USB_ReceiveCallback(uint8_t *pData, uint32_t length)
   */
 HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t length)
 {
-	if(QUEUE_AddArray(&toUSB, pData, length) != QUEUE_OK)
+	QUEUE_AddArray(&toUSB, pData, length);
+	if(QUEUE_AddArray(&bpktQueue, pData, length) != QUEUE_OK)
 		return HAL_ERROR;
 	return HAL_OK;
+}
+
+/* ---------------------------------------------------------------------------*/
+/**
+  * @brief	USB received callback handler
+  * @param	None
+  * @retval	None
+  */
+static void COMMS_ESPPacketReceived(BPKT_Packet_TD *packet)
+{
+
 }
 

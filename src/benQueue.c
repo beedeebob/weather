@@ -12,8 +12,6 @@
 #include "benQueue.h"
 
 /* Private define ------------------------------------------------------------*/
-#define QUEUE_PTRLOOP(Q, PTR)			((PTR) & (Q->size - 1))
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -178,13 +176,10 @@ QUEUE_STATUS QUEUE_ReadOutQueue(QUEUE_Typedef *queue, QUEUE_Typedef *data, uint3
   * @param	length: amount of data to read out
   * @retval QUEUE_STATUS
   */
-QUEUE_STATUS QUEUE_ReadArray(QUEUE_Typedef *queue, uint8_t *data, uint32_t length)
+QUEUE_STATUS QUEUE_ReadToArray(QUEUE_Typedef *queue, uint32_t offset, uint8_t *data, uint32_t length)
 {
-	if(QUEUE_COUNT(queue) < length)
-		return QUEUE_NOTENOUGHDATA;
-
 	for(uint32_t i = 0; i < length; i++)
-		data[i] = queue->pBuff[QUEUE_PTRLOOP(queue, (queue->out + i))];
+		data[i] = queue->pBuff[QUEUE_PTRLOOP(queue, (queue->out + offset + i))];
 
 	return QUEUE_OK;
 }
