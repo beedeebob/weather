@@ -71,20 +71,6 @@ void COMMS_milli(void)
 	{
 		USB_Transmit(&toUSB);
 	}
-
-
-#ifndef DEBUG
-#error BEN: Remove test encoding/decoding
-#else
-	static uint16_t tmr = 5000;
-	if(tmr)
-		tmr--;
-	if(!tmr)
-	{
-		tmr = 5000;
-		PKT_Encode((uint8_t*)"TESTING", 8, &bpktQueue);
-	}
-#endif
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -123,5 +109,19 @@ HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t
 static void COMMS_ESPPacketReceived(BPKT_Packet_TD *packet)
 {
 
+}
+
+/* ---------------------------------------------------------------------------*/
+/**
+  * @brief	Transmit to ESP device
+  * @param	data: pointer to the data to transit
+  * @param	length: amount of data to transmit
+  * @retval	HAL_StatusTypeDef
+  */
+HAL_StatusTypeDef COMMS_ESPTransmit(uint8_t *data, uint32_t length)
+{
+	if(PKT_Encode(data, length, &toUSART1) != BPKT_OK)
+		return HAL_ERROR;
+	return HAL_OK;
 }
 

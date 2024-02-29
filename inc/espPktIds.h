@@ -1,24 +1,22 @@
-/*
- * comms.h
- *
- *  Created on: Feb 22, 2024
- *      Author: ben
- */
+/**
+  ******************************************************************************
+  * @file     	espPktIds.h
+  * @author		ben
+  * @version	1V0
+  * @date		Feb 29, 2024
+  */
 
-#ifndef COMMS_H_
-#define COMMS_H_
+#ifndef ESPPKTIDS_H_
+#define ESPPKTIDS_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "cmsis_os2.h"
-#include "stm32f3xx_hal.h"
 
 /* Exported defines ----------------------------------------------------------*/
+#define espPkt_SetWeather							1
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
-extern const osThreadAttr_t comms_attributes;
 
 /* Exported functions ------------------------------------------------------- */
-void COMMS_milli(void);
-HAL_StatusTypeDef COMMS_ESPTransmit(uint8_t *data, uint32_t length);
 
-#endif /* COMMS_H_ */
+#endif /* ESPPKTIDS_H_ */

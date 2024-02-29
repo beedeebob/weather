@@ -9,6 +9,8 @@
 #include "weather.h"
 #include "bme280.h"
 #include "main.h"
+#include "espPktIds.h"
+#include "comms.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -20,7 +22,7 @@ extern TIM_HandleTypeDef htim1;
 const osThreadAttr_t weatherTask_attributes =
 {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 1024,
   .priority = (osPriority_t) osPriorityNormal,
 };
 
@@ -44,9 +46,6 @@ static BMP_ERR WTHR_TransmitReceive(struct BMP_TypeDef *arg, uint8_t *pTxData, u
   * @param	None
   * @retval	None
   */
-volatile int32_t temperature;
-volatile uint32_t pressure;
-volatile uint32_t humidity;
 void WTHR_Task(void* arg)
 {
 	//Create event
@@ -67,8 +66,31 @@ void WTHR_Task(void* arg)
 
 	while(1)
 	{
-		//TODO: Get BME280 readings
+		//Get BME280 readings
+		int32_t temperature;
+		uint32_t pressure;
+		uint32_t humidity;
 		BMP_ReadSensors(&bme280, &temperature, &pressure, &humidity, osWaitForever);
+
+		//Transmit to ESP
+		uint8_t data[30];
+		uint8_t len = 0;
+		data[len++] = espPkt_SetWeather;
+		data[len++] = (uint8_t)(temperature);
+		data[len++] = (uint8_t)(temperature >> 8);
+		data[len++] = (uint8_t)(temperature >> 16);
+		data[len++] = (uint8_t)(temperature >> 24);
+		data[len++] = (uint8_t)(pressure);
+		data[len++] = (uint8_t)(pressure >> 8);
+		data[len++] = (uint8_t)(pressure >> 16);
+		data[len++] = (uint8_t)(pressure >> 24);
+		data[len++] = (uint8_t)(humidity);
+		data[len++] = (uint8_t)(humidity >> 8);
+		data[len++] = (uint8_t)(humidity >> 16);
+		data[len++] = (uint8_t)(humidity >> 24);
+		COMMS_ESPTransmit(data, len);
+
+		//Control USB
 		if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) == 0)
 			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 20);
 		else
