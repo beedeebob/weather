@@ -29,7 +29,8 @@ typedef struct
 /* Exported variables --------------------------------------------------------*/
 extern const osThreadAttr_t usart_attributes;
 
-extern USART_td usart1;
+extern USART_td usartESP;
+extern USART_td usartPC;
 
 /* Exported functions ------------------------------------------------------- */
 void USART_Init(void);

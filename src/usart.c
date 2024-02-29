@@ -20,8 +20,10 @@ enum
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 
-USART_td usart1 = {&huart1};
+USART_td usartESP = {&huart1};
+USART_td usartPC = {&huart2};
 
 /* Private function prototypes -----------------------------------------------*/
 static void USART_usartTick(USART_td *usart);
@@ -36,7 +38,8 @@ HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t
   */
 void USART_Init(void)
 {
-	HAL_UART_Receive_DMA(usart1.huart, usart1.rxBuffer, USART_RXBUFFERSIZE);
+	HAL_UART_Receive_DMA(usartESP.huart, usartESP.rxBuffer, USART_RXBUFFERSIZE);
+	HAL_UART_Receive_DMA(usartPC.huart, usartPC.rxBuffer, USART_RXBUFFERSIZE);
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -47,7 +50,8 @@ void USART_Init(void)
   */
 void USART_milli(void)
 {
-	USART_usartTick(&usart1);
+	USART_usartTick(&usartESP);
+	USART_usartTick(&usartPC);
 }
 
 /* ---------------------------------------------------------------------------*/

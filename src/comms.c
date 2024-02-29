@@ -11,8 +11,8 @@
 #include "comms.h"
 #include "benQueue.h"
 #include "usart.h"
-#include "usb_device.h"
 #include "benPacket.h"
+#include "led.h"
 
 /* Private define ------------------------------------------------------------*/
 #define COMMS_BUFFERSIZE				128
@@ -26,9 +26,9 @@ enum
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 static uint8_t toUsart1Buffer[COMMS_BUFFERSIZE];
-static QUEUE_Typedef toUSART1 = {toUsart1Buffer, COMMS_BUFFERSIZE, 0, 0};
+static QUEUE_Typedef toUSARTESP = {toUsart1Buffer, COMMS_BUFFERSIZE, 0, 0};
 static uint8_t toUSBBuffer[COMMS_BUFFERSIZE];
-static QUEUE_Typedef toUSB = {toUSBBuffer, COMMS_BUFFERSIZE, 0, 0};
+static QUEUE_Typedef toUSARTPC = {toUSBBuffer, COMMS_BUFFERSIZE, 0, 0};
 static uint8_t bpktBuffer[COMMS_BUFFERSIZE];
 static QUEUE_Typedef bpktQueue = {bpktBuffer, COMMS_BUFFERSIZE, 0, 0};
 
@@ -61,29 +61,16 @@ void COMMS_milli(void)
 	}
 
 	//Transfer out to USART
-	if(QUEUE_COUNT(&toUSART1) > 0)
+	if(QUEUE_COUNT(&toUSARTESP) > 0)
 	{
-		USART_Transmit(&usart1, &toUSART1);
+		USART_Transmit(&usartESP, &toUSARTESP);
 	}
 
 	//Transfer out to USB
-	if(QUEUE_COUNT(&toUSB) > 0)
+	if(QUEUE_COUNT(&toUSARTPC) > 0)
 	{
-		USB_Transmit(&toUSB);
+		USART_Transmit(&usartPC, &toUSARTPC);
 	}
-}
-
-/* ---------------------------------------------------------------------------*/
-/**
-  * @brief	USB received callback handler
-  * @param	None
-  * @retval	None
-  */
-HAL_StatusTypeDef USB_ReceiveCallback(uint8_t *pData, uint32_t length)
-{
-	if(QUEUE_AddArray(&toUSART1, pData, length) != QUEUE_OK)
-		return HAL_ERROR;
-	return HAL_OK;
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -94,9 +81,19 @@ HAL_StatusTypeDef USB_ReceiveCallback(uint8_t *pData, uint32_t length)
   */
 HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t length)
 {
-	QUEUE_AddArray(&toUSB, pData, length);
-	if(QUEUE_AddArray(&bpktQueue, pData, length) != QUEUE_OK)
-		return HAL_ERROR;
+	if(usart == &usartESP)
+	{
+		QUEUE_AddArray(&toUSARTPC, pData, length);
+		if(QUEUE_AddArray(&bpktQueue, pData, length) != QUEUE_OK)
+			return HAL_ERROR;
+	}
+	else if (usart == &usartPC)
+	{
+		LED_Toggle();
+		if(QUEUE_AddArray(&toUSARTESP, pData, length) != QUEUE_OK)
+			return HAL_ERROR;
+	}
+
 	return HAL_OK;
 }
 
@@ -120,7 +117,7 @@ static void COMMS_ESPPacketReceived(BPKT_Packet_TD *packet)
   */
 HAL_StatusTypeDef COMMS_ESPTransmit(uint8_t *data, uint32_t length)
 {
-	if(PKT_Encode(data, length, &toUSART1) != BPKT_OK)
+	if(PKT_Encode(data, length, &toUSARTESP) != BPKT_OK)
 		return HAL_ERROR;
 	return HAL_OK;
 }

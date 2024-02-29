@@ -11,12 +11,12 @@
 #include "main.h"
 #include "espPktIds.h"
 #include "comms.h"
+#include "led.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 extern SPI_HandleTypeDef hspi1;
-extern TIM_HandleTypeDef htim1;
 
 
 const osThreadAttr_t weatherTask_attributes =
@@ -61,9 +61,6 @@ void WTHR_Task(void* arg)
 	//Start BME280
 	BMP_Start(&bme280, osWaitForever);
 
-	//Start LED
-	HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-
 	while(1)
 	{
 		//Get BME280 readings
@@ -90,11 +87,6 @@ void WTHR_Task(void* arg)
 		data[len++] = (uint8_t)(humidity >> 24);
 		COMMS_ESPTransmit(data, len);
 
-		//Control USB
-		if(__HAL_TIM_GET_COMPARE(&htim1, TIM_CHANNEL_1) == 0)
-			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 20);
-		else
-			__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
 		osDelay(1000);
 	}
 }
