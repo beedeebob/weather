@@ -89,7 +89,6 @@ HAL_StatusTypeDef USART_ReceiveCallback(USART_td *usart, uint8_t *pData, uint8_t
 	}
 	else if (usart == &usartPC)
 	{
-		LED_Toggle();
 		if(QUEUE_AddArray(&toUSARTESP, pData, length) != QUEUE_OK)
 			return HAL_ERROR;
 	}

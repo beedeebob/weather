@@ -15,12 +15,13 @@
 #include "comms.h"
 #include "espPktIds.h"
 #include "led.h"
+#include "weather.h"
 
 /* Private define ------------------------------------------------------------*/
 #define ESP_TIMEOUT					5000
 
-#define ESP_TICKSINIT()				uint32_t startTicks = xTaskGetTickCount()
-#define ESP_TICKSPASSED				(xTaskGetTickCount() - startTicks)
+#define ESP_TICKSINIT()				uint32_t startTicks = HAL_GetTick()
+#define ESP_TICKSPASSED				(HAL_GetTick() - startTicks)
 #define ESP_TICKSLEFT(TO)			((ESP_TICKSPASSED > (TO)) ? 0 : ((TO) - ESP_TICKSPASSED))
 enum
 {
@@ -51,7 +52,7 @@ static osEventFlagsId_t espEvents;
 static const osEventFlagsAttr_t espEvent_attributes = {.name = "espEvents"};
 
 /* Private function prototypes -----------------------------------------------*/
-static void ESP_Startup(void);
+static void ESP_task(void *arg);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -72,7 +73,7 @@ void ESP_Init(void)
   * @param	None
   * @retval	None
   */
-void ESP_task(void *arg)
+static void ESP_task(void *arg)
 {
 	ESP_TICKSINIT();
 
@@ -108,14 +109,14 @@ void ESP_task(void *arg)
 	osEventFlagsWait(espEvents, (ESP_EVENT_WIFIOK | ESP_EVENT_MQTTOK), osFlagsWaitAll, ESP_TICKSLEFT(ESP_TIMEOUT));
 
 	//Wait for weather update
-	osEventFlagsWait(systemFlags, SYS_EVENT_WEATHER | SYS_EVENT_WEATHERCMPLT, osFlagsNoClear | osFlagsWaitAny, ESP_TICKSLEFT(ESP_TIMEOUT));
+	uint32_t flags = osEventFlagsWait(systemEvents, SYS_EVENT_WEATHER | SYS_EVENT_WEATHERCMPLT, osFlagsNoClear | osFlagsWaitAny, ESP_TICKSLEFT(ESP_TIMEOUT));
 	if(!(flags & SYS_EVENT_WEATHER))
 	{
 		//Hardware shutdown
 		HAL_GPIO_WritePin(GPIO_ESP_NFLASH_GPIO_Port, GPIO_ESP_NFLASH_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(GPIO_ESP_EN_GPIO_Port, GPIO_ESP_EN_Pin, GPIO_PIN_RESET);
 
-		osEventFlagsSet(systemEvent, SYS_EVENT_ESPCMPLT);
+		osEventFlagsSet(systemEvents, SYS_EVENT_ESPCMPLT);
 		osThreadTerminate(espTaskHandle);
 		return;
 	}
@@ -125,18 +126,18 @@ void ESP_task(void *arg)
 	{
 		uint8_t len = 0;
 		txBuffer[len++] = espPkt_SetWeather;
-		txBuffer[len++] = (uint8_t)(temperature);
-		txBuffer[len++] = (uint8_t)(temperature >> 8);
-		txBuffer[len++] = (uint8_t)(temperature >> 16);
-		txBuffer[len++] = (uint8_t)(temperature >> 24);
-		txBuffer[len++] = (uint8_t)(pressure);
-		txBuffer[len++] = (uint8_t)(pressure >> 8);
-		txBuffer[len++] = (uint8_t)(pressure >> 16);
-		txBuffer[len++] = (uint8_t)(pressure >> 24);
-		txBuffer[len++] = (uint8_t)(humidity);
-		txBuffer[len++] = (uint8_t)(humidity >> 8);
-		txBuffer[len++] = (uint8_t)(humidity >> 16);
-		txBuffer[len++] = (uint8_t)(humidity >> 24);
+		txBuffer[len++] = (uint8_t)(WTHR_Temperature);
+		txBuffer[len++] = (uint8_t)(WTHR_Temperature >> 8);
+		txBuffer[len++] = (uint8_t)(WTHR_Temperature >> 16);
+		txBuffer[len++] = (uint8_t)(WTHR_Temperature >> 24);
+		txBuffer[len++] = (uint8_t)(WTHR_Pressure);
+		txBuffer[len++] = (uint8_t)(WTHR_Pressure >> 8);
+		txBuffer[len++] = (uint8_t)(WTHR_Pressure >> 16);
+		txBuffer[len++] = (uint8_t)(WTHR_Pressure >> 24);
+		txBuffer[len++] = (uint8_t)(WTHR_Humidity);
+		txBuffer[len++] = (uint8_t)(WTHR_Humidity >> 8);
+		txBuffer[len++] = (uint8_t)(WTHR_Humidity >> 16);
+		txBuffer[len++] = (uint8_t)(WTHR_Humidity >> 24);
 		if(COMMS_ESPTransmit(txBuffer, len) == HAL_OK)
 			osEventFlagsWait(espEvents, ESP_EVENT_WTHRACK, 0, 100);
 		else
@@ -162,7 +163,7 @@ void ESP_task(void *arg)
 	}
 
 	//Wait for weather update
-	osEventFlagsSet(systemEvent, SYS_EVENT_ESPCMPLT);
+	osEventFlagsSet(systemEvents, SYS_EVENT_ESPCMPLT);
 	osThreadTerminate(espTaskHandle);
 	return;
 }

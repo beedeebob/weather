@@ -20,7 +20,6 @@ extern uint32_t WTHR_Humidity;
 
 /* Exported functions ------------------------------------------------------- */
 void WTHR_Init(void);
-void WTHR_Task(void* arg);
 void WTHR_spiTxRxCompleteCallback(void);
 
 #endif /* WEATHER_H_ */

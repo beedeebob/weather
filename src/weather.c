@@ -14,9 +14,9 @@
 /* Private define ------------------------------------------------------------*/
 #define WTHR_TIMEOUT					1000
 
-#define WTHR_TICKSINIT()				uint32_t startTicks = xTaskGetTickCount()
-#define WTHR_TICKSPASSED()				(xTaskGetTickCount() - startTicks)
-#define WTHR_TICKSLEFT(TO)				((WTHR_TICKSPASSED > (TO)) ? 0 : ((TO) - WTHR_TICKSPASSED))
+#define WTHR_TICKSINIT()				uint32_t startTicks = HAL_GetTick()
+#define WTHR_TICKSPASSED()				(HAL_GetTick() - startTicks)
+#define WTHR_TICKSLEFT(TO)				((WTHR_TICKSPASSED() > (TO)) ? 0 : ((TO) - WTHR_TICKSPASSED()))
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -45,6 +45,7 @@ uint32_t WTHR_Humidity;
 
 /* Private function prototypes -----------------------------------------------*/
 static BMP_ERR WTHR_TransmitReceive(struct BMP_TypeDef *arg, uint8_t *pTxData, uint8_t *pRxData, uint8_t length, uint32_t osTimeout);
+static void WTHR_Task(void* arg);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -64,7 +65,7 @@ void WTHR_Init(void)
   * @param	None
   * @retval	None
   */
-void WTHR_Task(void* arg)
+static void WTHR_Task(void* arg)
 {
 	WTHR_TICKSINIT();
 
