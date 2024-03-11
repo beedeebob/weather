@@ -31,6 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "cmsis_os.h"
 
 /* USER CODE END Includes */
 
@@ -41,6 +42,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+extern osEventFlagsId_t systemEvents;
 
 /* USER CODE END EC */
 
@@ -69,14 +71,26 @@ void Error_Handler(void);
 #define SPI1_MISO_BME280_GPIO_Port GPIOA
 #define SPI1_MOSI_BME280_Pin GPIO_PIN_7
 #define SPI1_MOSI_BME280_GPIO_Port GPIOA
+#define GPIO_ESP_EN_Pin GPIO_PIN_8
+#define GPIO_ESP_EN_GPIO_Port GPIOA
 #define USART1_TX_ESP8266_Pin GPIO_PIN_9
 #define USART1_TX_ESP8266_GPIO_Port GPIOA
 #define USART1_RX_ESP8266_Pin GPIO_PIN_10
 #define USART1_RX_ESP8266_GPIO_Port GPIOA
+#define GPIO_ESP_NFLASH_Pin GPIO_PIN_11
+#define GPIO_ESP_NFLASH_GPIO_Port GPIOA
 #define GPIO_USB_DPPU_Pin GPIO_PIN_15
 #define GPIO_USB_DPPU_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
+
+enum
+{
+	SYS_EVENT_WEATHER = 0x01,		//Weather readings available
+	SYS_EVENT_MQTTPUBLISHED = 0x02,	//Weather published over MQTT
+	SYS_EVENT_WEATHERCMPLT = 0x04,	//Weather done processing
+	SYS_EVENT_ESPCMPLT = 0x08,		//ESP done processing
+};
 
 /* USER CODE END Private defines */
 

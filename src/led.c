@@ -44,7 +44,7 @@ void LED_Toggle(void)
   */
 void LED_ON(void)
 {
-	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 20);
+	__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 10);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -143,7 +143,7 @@ BMP_ERR BMP_ReadSensors(BMP_TypeDef *pBMP, int32_t *temperature, uint32_t *press
 
 void BMP_milli(void);
 BMP_ERR BMP_readSensors(BMP_TypeDef *pBME);
-BMP_ERR BMP_setMode(BMP_TypeDef *pBME, uint8_t mode);
+BMP_ERR BMP_Sleep(BMP_TypeDef *pBMP, uint32_t osTimeout);
 BMP_ERR BMP_setPressureOversamling(BMP_TypeDef *pBME, uint8_t oversampling);
 BMP_ERR BMP_setHumidityOversamling(BMP_TypeDef *pBME, uint8_t oversampling);
 BMP_ERR BMP_setTemperatureOversamling(BMP_TypeDef *pBME, uint8_t oversampling);

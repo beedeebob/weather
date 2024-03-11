@@ -263,6 +263,28 @@ BMP_ERR BMP_ReadSensors(BMP_TypeDef *pBMP, int32_t *temperature, uint32_t *press
 
 /*----------------------------------------------------------------------------*/
 /**
+  * @brief	Put the BMP to sleep
+  * @param	pBMP: pointer to the BME struct
+  * @param	osTimeout: os timeout
+  * @retval	BMP_ERR
+  */
+BMP_ERR BMP_Sleep(BMP_TypeDef *pBMP, uint32_t osTimeout)
+{
+	uint8_t ctrl = pBMP->settings.ctrl_meas;
+	ctrl &= ~(BMP_REG_CTRLMEAS_MODE_MASK);
+	ctrl |= (BMP_REG_CTRLMEAS_MODE_SLEEP << BMP_REG_CTRLMEAS_MODE_POS);
+
+	uint8_t data[2];
+	data[0] = ((BMP_REG_CTRLMEAS) & ~0x80);
+	data[1] = ctrl;
+	BMP_ERR result = pBMP->transmitReceive(pBMP, data, data, 2, osTimeout);
+	if(result != BMP_ERROK)
+		return result;
+	return BMP_ERROK;
+}
+
+/*----------------------------------------------------------------------------*/
+/**
   * @brief	Compensate temperature
   * @param	pBMP: pointer to the BME struct
   * @retval	None

@@ -25,6 +25,7 @@
 #include "weather.h"
 #include "comms.h"
 #include "usart.h"
+#include "esp.h"
 
 
 /* USER CODE END Includes */
@@ -67,6 +68,7 @@ const osThreadAttr_t defaultTask_attributes = {
 };
 /* USER CODE BEGIN PV */
 osThreadId_t weatherTaskHandle;
+osEventFlagsId_t systemEvents;
 
 /* USER CODE END PV */
 
@@ -125,6 +127,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
   USART_Init();
 
+  WTHR_Init();
+  ESP_Init();
+  PWR_Init();
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -152,7 +158,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  weatherTaskHandle = osThreadNew(WTHR_Task, NULL, &weatherTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -462,13 +467,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIO_CS_BME280_GPIO_Port, GPIO_CS_BME280_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_CS_BME280_Pin|GPIO_ESP_NFLASH_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIO_USB_DPPU_GPIO_Port, GPIO_USB_DPPU_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_ESP_EN_Pin|GPIO_USB_DPPU_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : GPIO_CS_BME280_Pin GPIO_USB_DPPU_Pin */
-  GPIO_InitStruct.Pin = GPIO_CS_BME280_Pin|GPIO_USB_DPPU_Pin;
+  /*Configure GPIO pins : GPIO_CS_BME280_Pin GPIO_ESP_EN_Pin GPIO_ESP_NFLASH_Pin GPIO_USB_DPPU_Pin */
+  GPIO_InitStruct.Pin = GPIO_CS_BME280_Pin|GPIO_ESP_EN_Pin|GPIO_ESP_NFLASH_Pin|GPIO_USB_DPPU_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

@@ -1,26 +1,20 @@
-/*
- * weather.h
- *
- *  Created on: Feb 17, 2024
- *      Author: ben
- */
+/**
+  ******************************************************************************
+  * @file     	pwr.h
+  * @author		ben
+  * @version	1V0
+  * @date		Mar 11, 2024
+  * @brief		
+  */
 
-#ifndef WEATHER_H_
-#define WEATHER_H_
+#ifndef PWR_H_
+#define PWR_H_
 
 /* Includes ------------------------------------------------------------------*/
-#include "cmsis_os2.h"
-
 /* Exported defines ----------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /* Exported variables --------------------------------------------------------*/
-extern int32_t WTHR_Temperature;
-extern uint32_t WTHR_Pressure;
-extern uint32_t WTHR_Humidity;
-
 /* Exported functions ------------------------------------------------------- */
-void WTHR_Init(void);
-void WTHR_Task(void* arg);
-void WTHR_spiTxRxCompleteCallback(void);
+void PWR_Init(void);
 
-#endif /* WEATHER_H_ */
+#endif /* PWR_H_ */
